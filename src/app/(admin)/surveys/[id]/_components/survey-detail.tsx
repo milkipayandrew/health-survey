@@ -1,26 +1,26 @@
-'use client';
+"use client";
 
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
 
-import { StatusBadge } from '@/components/status-badge';
-import { useMockData } from '@/hooks/use-mock-data';
+import { StatusBadge } from "@/components/status-badge";
+import { useMockData } from "@/hooks/use-mock-data";
 import {
   downloadTestResponses,
   type ExportFormat,
-} from '@/lib/export/test-responses-export';
-import { copySurvey, reopenSurvey, setSurveyStatus } from '@/lib/mock/store';
+} from "@/lib/export/test-responses-export";
+import { copySurvey, reopenSurvey, setSurveyStatus } from "@/lib/mock/store";
 import {
   generateTestResponses,
   type TestResponseMode,
-} from '@/lib/mock/test-responses';
-import { cn, primaryButtonClasses, secondaryButtonClasses } from '@/lib/utils';
-import type { TestResponse } from '@/types/domain';
+} from "@/lib/mock/test-responses";
+import { cn, primaryButtonClasses, secondaryButtonClasses } from "@/lib/utils";
+import type { TestResponse } from "@/types/domain";
 
-import { SurveyPreview } from './survey-preview';
-import { SurveyQrPreview } from './survey-qr-preview';
-import { TestResponsesPanel } from './test-responses-panel';
+import { SurveyPreview } from "./survey-preview";
+import { SurveyQrPreview } from "./survey-qr-preview";
+import { TestResponsesPanel } from "./test-responses-panel";
 
 interface SurveyDetailProps {
   /** The id of the survey to preview, resolved from the route. */
@@ -28,13 +28,7 @@ interface SurveyDetailProps {
 }
 
 /** Which device frame the respondent preview is rendered inside. */
-type PreviewDevice = 'desktop' | 'mobile';
-
-/** Outer frame width per device, sized to a phone vs. a roomy desktop card. */
-const DEVICE_FRAME: Record<PreviewDevice, string> = {
-  desktop: 'w-full max-w-2xl',
-  mobile: 'w-[375px]',
-};
+type PreviewDevice = "desktop" | "mobile";
 
 /**
  * Survey detail surface. Renders the assembled survey as a respondent would see
@@ -45,9 +39,9 @@ const DEVICE_FRAME: Record<PreviewDevice, string> = {
 export function SurveyDetail({ surveyId }: SurveyDetailProps) {
   const router = useRouter();
   const data = useMockData();
-  const [device, setDevice] = useState<PreviewDevice>('desktop');
+  const [device, setDevice] = useState<PreviewDevice>("desktop");
   const [responses, setResponses] = useState<TestResponse[] | null>(null);
-  const [testMode, setTestMode] = useState<TestResponseMode>('answer-all');
+  const [testMode, setTestMode] = useState<TestResponseMode>("answer-all");
 
   if (data === null) {
     return <p className="text-sm text-zinc-500">Loading survey…</p>;
@@ -86,11 +80,11 @@ export function SurveyDetail({ surveyId }: SurveyDetailProps) {
   }
 
   function handlePublish() {
-    setSurveyStatus(surveyId, 'published');
+    setSurveyStatus(surveyId, "published");
   }
 
   function handleArchive() {
-    setSurveyStatus(surveyId, 'archived');
+    setSurveyStatus(surveyId, "archived");
   }
 
   function handleReopen() {
@@ -120,13 +114,16 @@ export function SurveyDetail({ surveyId }: SurveyDetailProps) {
           <StatusBadge status={survey.status} />
         </div>
         <p className="mt-1 text-sm text-zinc-500">
-          {client?.name ?? 'Unknown client'} · Preview the survey as a
-          respondent sees it, then generate test responses to validate
-          branching and scoring.
+          {client?.name ?? "Unknown client"} · Preview the survey as a
+          respondent sees it, then generate test responses to validate branching
+          and scoring.
         </p>
 
-        <div className="mt-4 flex flex-wrap gap-3" aria-label="Lifecycle actions">
-          {survey.status === 'draft' && (
+        <div
+          className="mt-4 flex flex-wrap gap-3"
+          aria-label="Lifecycle actions"
+        >
+          {survey.status === "draft" && (
             <button
               type="button"
               onClick={handlePublish}
@@ -135,7 +132,7 @@ export function SurveyDetail({ surveyId }: SurveyDetailProps) {
               Publish
             </button>
           )}
-          {survey.status === 'draft' && (
+          {survey.status === "draft" && (
             <Link
               href={`/surveys/${survey.id}/edit`}
               className={secondaryButtonClasses()}
@@ -143,7 +140,7 @@ export function SurveyDetail({ surveyId }: SurveyDetailProps) {
               Edit draft
             </Link>
           )}
-          {survey.status === 'published' && (
+          {survey.status === "published" && (
             <button
               type="button"
               onClick={handleArchive}
@@ -152,7 +149,7 @@ export function SurveyDetail({ surveyId }: SurveyDetailProps) {
               Archive
             </button>
           )}
-          {survey.status === 'archived' && (
+          {survey.status === "archived" && (
             <button
               type="button"
               onClick={handleReopen}
@@ -171,40 +168,43 @@ export function SurveyDetail({ surveyId }: SurveyDetailProps) {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 gap-8 lg:grid-cols-[auto_1fr]">
-        <section className="flex flex-col gap-3" aria-label="Respondent preview">
+      <div className="flex flex-col gap-8">
+        <section
+          className="flex flex-col gap-3"
+          aria-label="Respondent preview"
+        >
           <div className="flex flex-wrap items-center justify-between gap-3">
             <h2 className="text-sm font-semibold text-zinc-700">Preview</h2>
             <div className="flex items-center gap-3">
               <Link
                 href={`/preview/${survey.id}`}
                 target="_blank"
-                className={secondaryButtonClasses('px-3 py-1 text-xs')}
+                className={secondaryButtonClasses("px-3 py-1 text-xs")}
               >
                 Open patient preview ↗
               </Link>
-            <div
-              role="group"
-              aria-label="Preview device"
-              className="inline-flex rounded-md border border-zinc-300 p-0.5"
-            >
-              {(['desktop', 'mobile'] as const).map((option) => (
-                <button
-                  key={option}
-                  type="button"
-                  aria-pressed={device === option}
-                  onClick={() => setDevice(option)}
-                  className={cn(
-                    'rounded px-3 py-1 text-sm font-medium capitalize transition-colors',
-                    device === option
-                      ? 'bg-zinc-900 text-white'
-                      : 'text-zinc-600 hover:bg-zinc-100',
-                  )}
-                >
-                  {option}
-                </button>
-              ))}
-            </div>
+              <div
+                role="group"
+                aria-label="Preview device"
+                className="inline-flex rounded-md border border-zinc-300 p-0.5"
+              >
+                {(["desktop", "mobile"] as const).map((option) => (
+                  <button
+                    key={option}
+                    type="button"
+                    aria-pressed={device === option}
+                    onClick={() => setDevice(option)}
+                    className={cn(
+                      "rounded px-3 py-1 text-sm font-medium capitalize transition-colors",
+                      device === option
+                        ? "bg-zinc-900 text-white"
+                        : "text-zinc-600 hover:bg-zinc-100",
+                    )}
+                  >
+                    {option}
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
 
@@ -212,92 +212,101 @@ export function SurveyDetail({ surveyId }: SurveyDetailProps) {
             <p className="text-sm text-zinc-500">
               Owning client not found — cannot render the branded preview.
             </p>
+          ) : device === "mobile" ? (
+            // Phone bezel — a narrow device frame so the mobile view reads
+            // unmistakably as a handset.
+            <div className="mx-auto w-[390px] rounded-[2.5rem] border-[10px] border-zinc-900 bg-zinc-900 shadow-2xl">
+              <div className="overflow-hidden rounded-[1.75rem] bg-white">
+                <SurveyPreview survey={survey} client={client} />
+              </div>
+            </div>
           ) : (
-            <div
-              className={cn(
-                'overflow-hidden rounded-xl border border-zinc-300 shadow-sm transition-all',
-                DEVICE_FRAME[device],
-              )}
-            >
+            // Desktop browser window — a roomy card topped with faux browser
+            // chrome so it reads as a wide desktop viewport.
+            <div className="w-full max-w-4xl overflow-hidden rounded-xl border border-zinc-300 shadow-sm">
+              <div className="flex items-center gap-1.5 border-b border-zinc-200 bg-zinc-100 px-4 py-2.5">
+                <span className="h-3 w-3 rounded-full bg-zinc-300" />
+                <span className="h-3 w-3 rounded-full bg-zinc-300" />
+                <span className="h-3 w-3 rounded-full bg-zinc-300" />
+              </div>
               <SurveyPreview survey={survey} client={client} />
             </div>
           )}
+        </section>
 
+        <div className="grid grid-cols-1 gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.6fr)] lg:items-start">
           <SurveyQrPreview surveyId={survey.id} />
-        </section>
 
-        <section
-          className="flex flex-col gap-3"
-          aria-label="Test responses"
-        >
-          <div className="flex flex-wrap items-center justify-between gap-4">
-            <h2 className="text-sm font-semibold text-zinc-700">
-              Test responses
-            </h2>
-            <div className="flex flex-wrap items-center gap-3">
-              <div
-                role="group"
-                aria-label="Test response mode"
-                className="inline-flex rounded-md border border-zinc-300 p-0.5"
-              >
-                {(
-                  [
-                    { mode: 'answer-all', label: 'Answer all' },
-                    { mode: 'ignore-validation', label: 'Ignore validation' },
-                  ] as const
-                ).map((option) => (
-                  <button
-                    key={option.mode}
-                    type="button"
-                    aria-pressed={testMode === option.mode}
-                    onClick={() => setTestMode(option.mode)}
-                    className={cn(
-                      'rounded px-3 py-1 text-sm font-medium transition-colors',
-                      testMode === option.mode
-                        ? 'bg-zinc-900 text-white'
-                        : 'text-zinc-600 hover:bg-zinc-100',
-                    )}
-                  >
-                    {option.label}
-                  </button>
-                ))}
+          <section className="flex flex-col gap-3" aria-label="Test responses">
+            <div className="flex flex-wrap items-center justify-between gap-4">
+              <h2 className="text-sm font-semibold text-zinc-700">
+                Test responses
+              </h2>
+              <div className="flex flex-wrap items-center gap-3">
+                <div
+                  role="group"
+                  aria-label="Test response mode"
+                  className="inline-flex rounded-md border border-zinc-300 p-0.5"
+                >
+                  {(
+                    [
+                      { mode: "answer-all", label: "Answer all" },
+                      { mode: "ignore-validation", label: "Ignore validation" },
+                    ] as const
+                  ).map((option) => (
+                    <button
+                      key={option.mode}
+                      type="button"
+                      aria-pressed={testMode === option.mode}
+                      onClick={() => setTestMode(option.mode)}
+                      className={cn(
+                        "rounded px-3 py-1 text-sm font-medium transition-colors",
+                        testMode === option.mode
+                          ? "bg-zinc-900 text-white"
+                          : "text-zinc-600 hover:bg-zinc-100",
+                      )}
+                    >
+                      {option.label}
+                    </button>
+                  ))}
+                </div>
+                <button
+                  type="button"
+                  onClick={handleGenerate}
+                  className={primaryButtonClasses("shrink-0")}
+                >
+                  Generate test responses
+                </button>
+                {(["csv", "json"] as const).map((format) => {
+                  const hasResponses =
+                    responses !== null && responses.length > 0;
+                  return (
+                    <button
+                      key={format}
+                      type="button"
+                      onClick={() => handleExport(format)}
+                      disabled={!hasResponses}
+                      className={secondaryButtonClasses(
+                        "shrink-0 uppercase disabled:cursor-not-allowed disabled:opacity-50",
+                      )}
+                    >
+                      Export {format}
+                    </button>
+                  );
+                })}
               </div>
-              <button
-                type="button"
-                onClick={handleGenerate}
-                className={primaryButtonClasses('shrink-0')}
-              >
-                Generate test responses
-              </button>
-              {(['csv', 'json'] as const).map((format) => {
-                const hasResponses =
-                  responses !== null && responses.length > 0;
-                return (
-                  <button
-                    key={format}
-                    type="button"
-                    onClick={() => handleExport(format)}
-                    disabled={!hasResponses}
-                    className={secondaryButtonClasses(
-                      'shrink-0 uppercase disabled:cursor-not-allowed disabled:opacity-50',
-                    )}
-                  >
-                    Export {format}
-                  </button>
-                );
-              })}
             </div>
-          </div>
 
-          {responses === null ? (
-            <p className="rounded-md border border-dashed border-zinc-300 p-6 text-center text-sm text-zinc-500">
-              No test responses yet. Generate canned results to validate
-              branching and scoring.
-            </p>
-          ) : (
-            <TestResponsesPanel responses={responses} />
-          )}
-        </section>
+            {responses === null ? (
+              <p className="rounded-md border border-dashed border-zinc-300 p-6 text-center text-sm text-zinc-500">
+                No test responses yet. Generate canned results to validate
+                branching and scoring.
+              </p>
+            ) : (
+              <TestResponsesPanel responses={responses} />
+            )}
+          </section>
+        </div>
       </div>
     </div>
   );

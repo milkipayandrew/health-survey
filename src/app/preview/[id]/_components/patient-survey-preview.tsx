@@ -35,6 +35,9 @@ const RUN_MODE_OPTIONS: { value: RunMode; label: string }[] = [
   { value: 'recurring', label: 'Recurring check-in' },
 ];
 
+/** Which device frame the patient walkthrough is rendered inside. */
+type PreviewDevice = 'desktop' | 'mobile';
+
 /**
  * Whether a question has been answered, per its type. Drives required-field
  * gating on the Next/Submit control.
@@ -399,14 +402,16 @@ interface PatientSurveyPreviewProps {
 /**
  * Standalone patient-facing preview surface. Looks the survey + owning client up
  * from the client-side mock store, applies white-label branding, and renders the
- * walkthrough inside a phone mockup so a reviewer on a laptop sees exactly the
- * mobile patient experience. The page chrome (run-mode toggle, "not saved" note,
- * back link) sits OUTSIDE the phone frame so the framed content stays a faithful
- * patient view.
+ * one-question-at-a-time walkthrough inside a selectable device frame — a phone
+ * mockup (mobile) or a faux browser window (desktop) — so a reviewer sees exactly
+ * the patient experience on either form factor. The page chrome (run-mode +
+ * device toggles, "not saved" note, back link) sits OUTSIDE the device frame so
+ * the framed content stays a faithful patient view.
  */
 export function PatientSurveyPreview({ surveyId }: PatientSurveyPreviewProps) {
   const data = useMockData();
   const [runMode, setRunMode] = useState<RunMode>('initial');
+  const [device, setDevice] = useState<PreviewDevice>('mobile');
 
   if (data === null) {
     return (
@@ -436,46 +441,92 @@ export function PatientSurveyPreview({ surveyId }: PatientSurveyPreviewProps) {
 
   return (
     <main className="flex min-h-full flex-col items-center gap-6 bg-zinc-100 px-4 py-8">
-      <div className="flex w-full max-w-md flex-col gap-3">
-        <div className="flex items-center justify-between gap-3">
+      <div className="flex w-full max-w-2xl flex-col gap-3">
+        <div className="flex flex-wrap items-center justify-between gap-3">
           <span className="rounded-full bg-zinc-900 px-3 py-1 text-xs font-medium text-white">
             Preview
           </span>
-          <div
-            role="group"
-            aria-label="Preview run mode"
-            className="inline-flex rounded-md border border-zinc-300 bg-white p-0.5"
-          >
-            {RUN_MODE_OPTIONS.map((option) => (
-              <button
-                key={option.value}
-                type="button"
-                aria-pressed={runMode === option.value}
-                onClick={() => setRunMode(option.value)}
-                className={cn(
-                  'rounded px-3 py-1 text-xs font-medium transition-colors',
-                  runMode === option.value
-                    ? 'bg-zinc-900 text-white'
-                    : 'text-zinc-600 hover:bg-zinc-100',
-                )}
-              >
-                {option.label}
-              </button>
-            ))}
+          <div className="flex items-center gap-3">
+            <div
+              role="group"
+              aria-label="Preview run mode"
+              className="inline-flex rounded-md border border-zinc-300 bg-white p-0.5"
+            >
+              {RUN_MODE_OPTIONS.map((option) => (
+                <button
+                  key={option.value}
+                  type="button"
+                  aria-pressed={runMode === option.value}
+                  onClick={() => setRunMode(option.value)}
+                  className={cn(
+                    'rounded px-3 py-1 text-xs font-medium transition-colors',
+                    runMode === option.value
+                      ? 'bg-zinc-900 text-white'
+                      : 'text-zinc-600 hover:bg-zinc-100',
+                  )}
+                >
+                  {option.label}
+                </button>
+              ))}
+            </div>
+            <div
+              role="group"
+              aria-label="Preview device"
+              className="inline-flex rounded-md border border-zinc-300 bg-white p-0.5"
+            >
+              {(['desktop', 'mobile'] as const).map((option) => (
+                <button
+                  key={option}
+                  type="button"
+                  aria-pressed={device === option}
+                  onClick={() => setDevice(option)}
+                  className={cn(
+                    'rounded px-3 py-1 text-xs font-medium capitalize transition-colors',
+                    device === option
+                      ? 'bg-zinc-900 text-white'
+                      : 'text-zinc-600 hover:bg-zinc-100',
+                  )}
+                >
+                  {option}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
         <p className="text-xs text-zinc-500">
-          This is how {clientName} patients see “{survey.name}” on their phone.
-          Answers aren&apos;t saved.
+          This is how {clientName} patients see “{survey.name}” on{' '}
+          {device === 'mobile' ? 'their phone' : 'the web'}. Answers
+          aren&apos;t saved.
         </p>
       </div>
 
-      {/* Phone mockup: a device bezel framing the true mobile patient view. */}
-      <div className="rounded-[2.75rem] border-[12px] border-zinc-900 bg-zinc-900 shadow-2xl">
-        <div className="relative h-[760px] w-[360px] overflow-hidden rounded-[2rem] bg-white">
-          {/* Notch */}
-          <div className="absolute left-1/2 top-0 z-10 h-5 w-32 -translate-x-1/2 rounded-b-2xl bg-zinc-900" />
-          <div className="flex h-full flex-col">
+      {device === 'mobile' ? (
+        // Phone mockup: a device bezel framing the true mobile patient view.
+        <div className="rounded-[2.75rem] border-[12px] border-zinc-900 bg-zinc-900 shadow-2xl">
+          <div className="relative h-[760px] w-[360px] overflow-hidden rounded-[2rem] bg-white">
+            {/* Notch */}
+            <div className="absolute left-1/2 top-0 z-10 h-5 w-32 -translate-x-1/2 rounded-b-2xl bg-zinc-900" />
+            <div className="flex h-full flex-col">
+              <SurveyRunner
+                key={runMode}
+                survey={survey}
+                branding={branding}
+                clientName={clientName}
+                runMode={runMode}
+              />
+            </div>
+          </div>
+        </div>
+      ) : (
+        // Desktop browser window — the same walkthrough in a roomy card topped
+        // with faux browser chrome so it reads as a wide desktop viewport.
+        <div className="w-full max-w-2xl overflow-hidden rounded-xl border border-zinc-300 bg-white shadow-sm">
+          <div className="flex items-center gap-1.5 border-b border-zinc-200 bg-zinc-100 px-4 py-2.5">
+            <span className="h-3 w-3 rounded-full bg-zinc-300" />
+            <span className="h-3 w-3 rounded-full bg-zinc-300" />
+            <span className="h-3 w-3 rounded-full bg-zinc-300" />
+          </div>
+          <div className="flex h-[700px] flex-col">
             <SurveyRunner
               key={runMode}
               survey={survey}
@@ -485,7 +536,7 @@ export function PatientSurveyPreview({ surveyId }: PatientSurveyPreviewProps) {
             />
           </div>
         </div>
-      </div>
+      )}
 
       <Link
         href={`/surveys/${survey.id}`}

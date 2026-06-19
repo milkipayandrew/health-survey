@@ -11,6 +11,7 @@ import { EditClientForm } from './(admin)/clients/[id]/edit/_components/edit-cli
 import { SurveyBuilder } from './(admin)/surveys/new/_components/survey-builder';
 import { SurveyDetail } from './(admin)/surveys/[id]/_components/survey-detail';
 import { PatientSurveyPreview } from './preview/[id]/_components/patient-survey-preview';
+import { ProviderDashboard } from './provider-dashboard/[clientId]/_components/provider-dashboard';
 
 /**
  * Client-side SPA fallback for the GitHub Pages static export.
@@ -118,6 +119,10 @@ function resolveView(pathname: string): ReactNode | null {
   // /preview/<id> — patient-facing, chrome-free (matches its own route group).
   if (seg.length === 2 && seg[0] === 'preview') {
     return <PatientSurveyPreview surveyId={seg[1]} />;
+  }
+  // /provider-dashboard/<clientId> — provider-facing, standalone, chrome-free.
+  if (seg.length === 2 && seg[0] === 'provider-dashboard') {
+    return <ProviderDashboard clientId={seg[1]} />;
   }
   // /surveys/<id>/edit
   if (seg.length === 3 && seg[0] === 'surveys' && seg[2] === 'edit') {

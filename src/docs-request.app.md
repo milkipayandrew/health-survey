@@ -4,108 +4,38 @@ Pending cache maintenance requests for `docs.app.md`. Each entry captures resear
 
 ---
 
-## Entry — 2026-06-18T17:54:57Z
+## Entry — 2026-06-19T07:05:00
 
-**Status:** STALE
+**Status:** STALE (relative to working tree — committed cache is fresh at `c8587b3`, but in-scope files carry uncommitted edits)
 **Target:** `demo/src/docs.app.md`
-**Reason:** Cache references commit `eaecc7b`; 7 commits / 33 changed files behind HEAD. Cache predates the scheduling/flow-logic/QR layers entirely.
-**Commit at research time:** `75b3ccc`
+**Reason:** Both preview targets have uncommitted working-tree edits not reflected in the cache; cache also cites a drifted line count for `survey-detail.tsx` (308 → now 313).
+**Commit at research time:** `c8587b3`
 
 ### Sources read
 
 | File | Commit | Lines |
 |------|--------|-------|
-| `demo/src/docs.app.md` | `eaecc7b` | 1-110 |
-| `demo/src/lib/scheduling.ts` | `75b3ccc` | 1-144 |
-| `demo/src/types/domain.ts` | `75b3ccc` | 1-288 |
-| `demo/src/lib/mock/store.ts` | `75b3ccc` | 1-604 |
-| `demo/src/lib/mock/fixtures.ts` | `75b3ccc` | 1-397 |
-| `demo/src/lib/flow-logic.ts` | `75b3ccc` | 1-77 |
-| `demo/src/lib/qr/survey-url.ts` | `75b3ccc` | 1-23 |
-| `demo/src/app/(admin)/surveys/new/_components/survey-builder.tsx` | `75b3ccc` | 1-925 |
-| `demo/src/app/(admin)/surveys/[id]/_components/survey-preview.tsx` | `75b3ccc` | 1-250 |
-| `demo/src/app/(admin)/surveys/[id]/_components/survey-qr-preview.tsx` | `75b3ccc` | 1-49 |
-| `demo/src/app/(admin)/surveys/[id]/_components/survey-detail.tsx` | `75b3ccc` | 1-150 |
+| `demo/src/app/preview/[id]/_components/patient-survey-preview.tsx` | `c8587b3` | 1-498 |
+| `demo/src/app/preview/[id]/page.tsx` | `c8587b3` | 1-46 |
+| `demo/src/app/(admin)/surveys/[id]/_components/survey-detail.tsx` | `c8587b3` | 1-313 |
+| `demo/src/app/(admin)/surveys/[id]/_components/survey-preview.tsx` | `c8587b3` | 1-295 |
+| `demo/src/types/domain.ts` | `c8587b3` | 1-52 |
+| `demo/src/app/not-found.tsx` | `c8587b3` | 110-124 |
 
 ### dx-find output
 
-Single cache file `demo/src/docs.app.md` (110 lines), reference commit `eaecc7b`, STALE — 7 commits behind HEAD `75b3ccc`, 33 files changed (+3462/-466) in `demo/src`. New since cache: `lib/scheduling.ts`, `lib/flow-logic.ts`, `lib/qr/survey-url.ts`, `lib/mock/test-responses.ts`, `active-client.tsx`, `client-selector.tsx`, `question-editor.tsx`, `search-input.tsx`. Heavily modified: `survey-builder.tsx` (~831 lines changed), `store.ts`, `fixtures.ts`, `types/domain.ts`, library manager (+297). No pending requests previously. No coverage gaps — target within `docs.app.md` scope.
+Cache `demo/src/docs.app.md` is FRESH at committed HEAD `c8587b3` (0 commits behind, 0 scope files changed per `dx-staleness-check`), but raised an uncommitted-changes warning. In-scope files with working-tree edits include both preview targets (`preview/[id]/page.tsx`, `surveys/[id]/_components/survey-detail.tsx`) plus `clients/[id]/edit/page.tsx`, `surveys/[id]/edit/page.tsx`, `surveys/[id]/page.tsx`, `layout.tsx`, new `components/wireframe-notice.tsx`, and the cache file itself. The prior `docs-request.app.md` was deleted in the working tree (no active request before this entry). No coverage gap — both targets are in `app/preview/` (PREV) and `app/(admin)/` (ADM) scope and documented in the DOC00007 region.
 
 ### Proposed updates
 
-- **ADD chunk `scheduling`** — New section documenting the scheduling/cadence layer:
-  - `lib/scheduling.ts`: `resolveEffectiveCadence(survey, group)` resolves a **2-layer** effective
-    cadence (survey default → block-group override). Pure, render-time. Medication-preset layer is
-    explicitly out of scope (comment at `scheduling.ts:18-21`).
-  - `types/domain.ts:149-159`: `Schedule { every, unit, firstSendOffsetDays }`.
-  - `types/domain.ts:168-181`: `BlockGroup { name, order, schedule?, blocks[] }`.
-  - Persistence: `store.ts:480-485` `updateSurveySchedule`, `store.ts:498-523`
-    `updateBlockGroupSchedule` (localStorage only).
-  - Authoring UI: `survey-builder.tsx` `ScheduleEditor` (859-925), per-group override toggle
-    (607-644).
-  - Note the runtime gap: no Check-in lifecycle, no scheduler trigger, no Enrollment — `domain.ts:8`
-    marks Enrollment/Check-in/Response/Alert intentionally out of scope.
+- **Chunk `DOC00007` (preview region, ~docs.app.md:228-257)** — UPDATE
+  - Correct the cited length of `surveys/[id]/_components/survey-detail.tsx` from `308` to `313` lines.
+  - Note the device-toggle scaffolding lives in `survey-detail.tsx`: `PreviewDevice` type `:31`, `device` state `:42`, segmented toggle UI `:186-208`, undefined-client text branch `:211-214`, mobile phone-bezel `:215-222`, desktop browser-chrome card `:223-234`.
+  - Note the shared `survey-preview.tsx` (`SurveyPreview`) props contract: `{ survey: Survey; client: Client }` both required (`:22-27`); reads `client.branding.primaryColor` (`:150,:284`), `client.branding.logo` as a guard-less `<img>` (`:154`), `client.name` (`:156`), `<BrandSwatches branding={client.branding}>` (`:291`); owns its own internal run-mode toggle (`:161-183`).
+  - Note `patient-survey-preview.tsx` structure: `PatientSurveyPreview :407-498`, local `SurveyRunner :190-339`, `QuestionInput :68-173`, `BrandedHeader :352-392` (with empty-logo guard at `:365`), `FALLBACK_BRANDING :26-30`, outer run-mode toggle `:444-465`, hardcoded phone bezel `:473-488`.
+  - Note `PatientSurveyPreview` has a second importer beyond `page.tsx`: `app/not-found.tsx:13,121` (client-side `/preview/<id>` for session-created surveys).
+  - Record domain types for fallback work: `ClientBranding` (`types/domain.ts:24-31`) `{logo,primaryColor,secondaryColor}`; `Client` (`:40-50`) `{id,name,branding,status,createdAt}`; `ClientStatus :17`.
 
-- **ADD chunk `flow-logic`** — `lib/flow-logic.ts`: `resolveInclusion`, `isBlockIncluded`
-  (initial/recurring/always), `isQuestionVisible` (display-condition branching). Render-time only.
-
-- **ADD chunk `qr`** — `lib/qr/survey-url.ts:20-22` `surveyCheckInUrl()` derives a deterministic
-  preview URL (`https://demo.effective-health.example/c/<surveyId>`); preview artifact only, never
-  creates a check-in (`qr/survey-url.ts:6-19`, `survey-qr-preview.tsx`).
-
-- **UPDATE chunk** covering `survey-builder.tsx` — reflect the ~831-line growth: block groups,
-  per-group schedule override, block inclusion (initial/recurring), question editor, display
-  conditions.
-
-- **UPDATE chunk** covering `lib/mock/` — add `test-responses.ts` (deterministic fabricated preview
-  responses) and the schedule mutators; note migration logic for legacy flat-block surveys in
-  `store.ts`.
-
-- **UPDATE `doc-meta.commit`** to `75b3ccc`.
-
----
-
-## Entry — 2026-06-18T16:30:00Z
-
-**Status:** STALE
-**Target:** `demo/src/docs.app.md`
-**Reason:** Supersedes the prior entry's commit target. HEAD has advanced to `c55de4c` (check-in lifecycle layer added: `lib/checkin-lifecycle.ts`, effective-cadence resolution, Workflow 2). Cache still references `eaecc7b` (34 files / ~11 commits behind). Research was for the patient-survey-mobile-preview task.
-**Commit at research time:** `c55de4c`
-
-### Sources read
-
-| File | Commit | Lines |
-|------|--------|-------|
-| `demo/src/docs.app.md` | `c55de4c` | 1-111 |
-| `demo/src/types/domain.ts` | `c55de4c` | 1-511 (full; note uncommitted working-tree edit) |
-| `demo/src/lib/flow-logic.ts` | `c55de4c` | 1-77 |
-| `demo/src/lib/scheduling.ts` | `c55de4c` | 1-360 |
-| `demo/src/lib/qr/survey-url.ts` | `c55de4c` | 1-23 |
-| `demo/src/lib/mock/store.ts` | `c55de4c` | 1-626 |
-| `demo/src/lib/utils.ts` | `c55de4c` | 1-52 |
-| `demo/src/hooks/use-mock-data.ts` | `c55de4c` | 1-34 |
-| `demo/src/hooks/active-client.tsx` | `c55de4c` | 1-148 |
-| `demo/src/app/layout.tsx` | `c55de4c` | 1-36 |
-| `demo/src/app/page.tsx` | `c55de4c` | 1-7 |
-| `demo/src/app/(admin)/layout.tsx` | `c55de4c` | 1-41 |
-| `demo/src/app/(admin)/surveys/[id]/page.tsx` | `c55de4c` | 1-17 |
-| `demo/src/app/(admin)/surveys/[id]/_components/survey-preview.tsx` | `c55de4c` | 1-296 |
-| `demo/src/app/(admin)/surveys/[id]/_components/survey-detail.tsx` | `c55de4c` | 1-296 |
-| `demo/src/app/(admin)/surveys/[id]/_components/survey-qr-preview.tsx` | `c55de4c` | 1-49 |
-| `demo/src/components/brand-swatches.tsx` | `c55de4c` | 1-38 |
-| `demo/src/app/globals.css` | `c55de4c` | 1-20 |
-
-### dx-find output
-
-Single cache file `demo/src/docs.app.md` (110 lines), reference commit `eaecc7b`, STALE — 34 files changed (+4354/-470) in `demo/src` vs HEAD `c55de4c`. `dx-staleness-check` binary errored (`no source entries found in frontmatter` — expects flat `source`, cache uses `sources:` block format); staleness determined via git. New since cache and outside declared `sources:` prefixes: `lib/scheduling.ts`, `lib/flow-logic.ts`, `lib/qr/`, `lib/export/`, `lib/checkin-lifecycle.ts`. Resolver should extend `sources:` to cover `lib/` broadly.
-
-### Proposed updates
-
-In addition to the prior entry's proposed ADD/UPDATE chunks (scheduling, flow-logic, qr, survey-builder, lib/mock), apply:
-
-- **ADD chunk `checkin-lifecycle`** — `lib/checkin-lifecycle.ts` + the layered effective-cadence resolution (Workflow 2); `domain.ts:292-438` `Patient`/`Enrollment`/`CheckIn`/`Response` are now modeled (the cache wrongly claims these are absent).
-- **CORRECT survey-shape facts** — current shape is `Survey → BlockGroup → Block → Question` (`Survey.blockGroups`, `domain.ts:242-264`); the cache's flat-`blocks[]` description is wrong. `Question.displayCondition` (`domain.ts:79-84`) and `Block.inclusion` (`domain.ts:114`) exist.
-- **NOTE for future patient-facing route** — no `/preview` route or patient-facing UI exists yet; store is client-only (`use-mock-data.ts:1`). Captured in research doc `__Tasks/02_open/task-260618_1619-patient-survey-mobile-preview/research/RES-survey-preview-edit-points.md`.
-- **UPDATE `doc-meta.commit`** to `c55de4c` (not `75b3ccc`) and extend `sources:` to include `lib/` broadly.
+> Note: this entry documents pre-implementation state for task-260619_0705 (unify preview route). The route rewrite will change `patient-survey-preview.tsx` substantially (drop `SurveyRunner`/`QuestionInput`/`BrandedHeader`, adopt `SurveyPreview` + device toggle). Prefer re-running dx-research on `app/preview/` after that task lands rather than applying these line-level notes verbatim if the rewrite is already committed at resolve time.
 
 ---

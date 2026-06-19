@@ -2,6 +2,7 @@ import Link from 'next/link';
 
 import { BrandSwatches } from '@/components/brand-swatches';
 import { StatusBadge } from '@/components/status-badge';
+import { secondaryButtonClasses } from '@/lib/utils';
 import type { Client } from '@/types/domain';
 
 import { ClientStatusToggle } from './client-status-toggle';
@@ -62,6 +63,14 @@ export function ClientCard({ client, surveyCount }: ClientCardProps) {
           className="rounded-md border border-zinc-300 px-3 py-1.5 text-xs font-medium text-zinc-700 transition-colors hover:bg-zinc-100"
         >
           Edit
+        </Link>
+        <Link
+          href={`/provider-dashboard/${client.id}`}
+          target="_blank"
+          rel="noopener"
+          className={secondaryButtonClasses('px-3 py-1.5 text-xs font-medium')}
+        >
+          View provider dashboard ↗
         </Link>
         <ClientStatusToggle clientId={client.id} status={client.status} />
       </div>
