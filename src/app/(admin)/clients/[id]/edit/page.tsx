@@ -1,6 +1,20 @@
 import Link from 'next/link';
 
+import { SEED_CLIENTS } from '@/lib/mock/fixtures';
+
 import { EditClientForm } from './_components/edit-client-form';
+
+/**
+ * Pre-renders a static HTML shell per seeded client for the static export
+ * (GitHub Pages). Clients created during a demo session live only in the
+ * browser's `localStorage` and are reached via in-app client navigation;
+ * `dynamicParams = false` keeps the export to exactly these known ids.
+ */
+export function generateStaticParams(): { id: string }[] {
+  return SEED_CLIENTS.map((client) => ({ id: client.id }));
+}
+
+export const dynamicParams = false;
 
 /**
  * Edit-client page. Re-opens an existing client in the reusable client form

@@ -1,4 +1,18 @@
+import { SEED_SURVEYS } from '@/lib/mock/fixtures';
+
 import { SurveyDetail } from './_components/survey-detail';
+
+/**
+ * Pre-renders a static HTML shell per seeded survey for the static export
+ * (GitHub Pages). Surveys created during a demo session live only in the
+ * browser's `localStorage` and are reached via in-app client navigation;
+ * `dynamicParams = false` keeps the export to exactly these known ids.
+ */
+export function generateStaticParams(): { id: string }[] {
+  return SEED_SURVEYS.map((survey) => ({ id: survey.id }));
+}
+
+export const dynamicParams = false;
 
 /**
  * Survey detail page. The survey itself lives in the client-side mock store, so

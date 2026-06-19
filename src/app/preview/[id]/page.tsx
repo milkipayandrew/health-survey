@@ -1,6 +1,21 @@
 import type { Metadata, Viewport } from 'next';
 
+import { SEED_SURVEYS } from '@/lib/mock/fixtures';
+
 import { PatientSurveyPreview } from './_components/patient-survey-preview';
+
+/**
+ * Pre-renders a static HTML shell per seeded survey for the static export
+ * (GitHub Pages). Surveys created during a demo session live only in the
+ * browser's `localStorage`, so their preview is reached via in-app client
+ * navigation rather than a pre-built page. `dynamicParams = false` keeps the
+ * export to exactly these known ids.
+ */
+export function generateStaticParams(): { id: string }[] {
+  return SEED_SURVEYS.map((survey) => ({ id: survey.id }));
+}
+
+export const dynamicParams = false;
 
 export const metadata: Metadata = {
   title: 'Survey preview',

@@ -1,6 +1,20 @@
 import Link from 'next/link';
 
+import { SEED_SURVEYS } from '@/lib/mock/fixtures';
+
 import { SurveyBuilder } from '../../new/_components/survey-builder';
+
+/**
+ * Pre-renders a static HTML shell per seeded survey for the static export
+ * (GitHub Pages). Drafts created during a demo session live only in the
+ * browser's `localStorage` and are reached via in-app client navigation;
+ * `dynamicParams = false` keeps the export to exactly these known ids.
+ */
+export function generateStaticParams(): { id: string }[] {
+  return SEED_SURVEYS.map((survey) => ({ id: survey.id }));
+}
+
+export const dynamicParams = false;
 
 /**
  * Edit-draft page. Re-opens an existing Draft survey in the builder (resolving
