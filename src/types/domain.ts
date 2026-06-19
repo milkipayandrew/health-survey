@@ -6,11 +6,9 @@
  * Question) for the two in-scope Admin workflows, plus the {@link Enrollment}
  * whose effective cadence is resolved from the layered schedule model, and the
  * per-patient check-in cadence lifecycle ({@link Patient}, {@link CheckIn},
- * {@link Response}) that the resolved cadence drives (Workflow 2), and the
- * read-only Provider-dashboard entities ({@link Alert}, plus the
- * dashboard-relevant {@link Patient} demographics/score fields) the
- * provider-dashboard demo reads (Workflow 3, DOM00009). All runtime entities are
- * demo-scoped mock data — there is no live engine, backend, or auth.
+ * {@link Response}) that the resolved cadence drives (Workflow 2). The Provider
+ * runtime entities (Alert) remain out of scope for this demo and are not
+ * modeled here.
  */
 
 /** Whether a Client's check-ins are running. */
@@ -325,35 +323,13 @@ export interface Enrollment {
 export type NewEnrollmentInput = Omit<Enrollment, 'id' | 'effectiveCadence'>;
 
 /**
- * A patient's demographic attributes — the domain model's Patient
- * `Demographics` (DOM00015): captured once and hidden on recurring check-ins.
- *
- * @remarks Surfaced to the provider dashboard so the patient population can be
- * aggregated/grouped by category (e.g. age band, gender). Demo-scoped: these are
- * mock attributes for the dashboard's category breakdown, not a full
- * demographics model.
- */
-export interface Demographics {
-  /** Patient gender (e.g. `female`, `male`, `other`) — a grouping category. */
-  gender: string;
-  /** Patient age band (e.g. `18-39`, `40-64`, `65+`) — a grouping category. */
-  ageBand: string;
-}
-
-/**
  * A person monitored on medication who receives and completes check-ins — the
  * domain model's `Patient` (DOM00015). The contact record whose phone must stay
  * valid for the next scheduled send: a patient is identified by phone on
  * recurring check-ins, and the lifecycle updates this record on each response.
  *
  * @remarks Contacts are kept **per client** (`clientId`) so each client's
- * patient population stays separate (REQ00007). The {@link Patient.email},
- * {@link Patient.dateOfBirth}, {@link Patient.demographics}, and
- * {@link Patient.language} fields are read-only demo attributes the provider
- * dashboard reads (DOM00009): `name`/`email` drive the patient-list filter and
- * `demographics` drives the aggregate-by-category breakdown. They are optional so
- * the Workflow-2 check-in lifecycle, which only needs identity + phone, is
- * unaffected.
+ * patient population stays separate (REQ00007).
  */
 export interface Patient {
   id: string;
@@ -366,14 +342,6 @@ export interface Patient {
    * send — a bad/blank phone breaks the next scheduled send (REQ00006).
    */
   phone: string;
-  /** Contact email — a filter key for the provider dashboard's patient list. */
-  email?: string;
-  /** Date of birth (ISO-8601 `YYYY-MM-DD`). Identity field verified each check-in. */
-  dateOfBirth?: string;
-  /** Demographics (race, gender, etc.); captured once, hidden on recurring check-ins. */
-  demographics?: Demographics;
-  /** Preferred language (e.g. `en`, `es`); defaults per contact, drives survey language. */
-  language?: string;
 }
 
 /**
@@ -470,32 +438,6 @@ export interface ResponseContact {
 }
 
 /**
- * A notification raised to a provider when a {@link Response} indicates the
- * patient should be contacted (e.g. severe side effects, high adherence score) —
- * the domain model's `Alert` (DOM00023). A concerning response may raise one or
- * more alerts (DOM00002: `Response ||--o{ Alert`).
- *
- * @remarks Surfaced **read-only** on the provider dashboard — a flag/badge/list
- * of who needs follow-up. The acknowledge/handle alert lifecycle is out of demo
- * scope, so this carries no status/handled field. Demo-scoped mock data: no
- * engine raises these; they are seeded against the responses they "concern".
- */
-export interface Alert {
-  id: string;
-  /** The Patient the alert concerns. Required. */
-  patientId: string;
-  /**
-   * The Response that triggered the alert (DOM00002 `may trigger`); links the
-   * alert back to the concerning submission for the drill-down.
-   */
-  responseId: string;
-  /** Why the alert fired (e.g. `High adherence score`, `Severe side effects`). Required. */
-  reason: string;
-  /** When the alert was raised (ISO-8601). */
-  createdAt: string;
-}
-
-/**
  * Library template entities the survey builder assembles from. They carry no
  * survey/client identity until copied into a Survey.
  */
@@ -565,25 +507,4 @@ export interface MockData {
    * lowest cadence layer).
    */
   medications: Medication[];
-}
-
-/**
- * The demo-scoped runtime dataset the provider dashboard reads — the runtime
- * entities (Patient, Enrollment, Check-in, Response, Alert) that are otherwise
- * not modeled by the Admin platform (REQ00006). Kept separate from
- * {@link MockData} (the Admin store) so the dashboard's mock data stays clearly
- * demo-scoped and read-only.
- *
- * @remarks Every record carries the relationships from DOM00002:
- * `Client ||--o{ Patient`, `Patient ||--o{ Enrollment`,
- * `Enrollment ||--o{ CheckIn`, `CheckIn ||--o| Response`,
- * `Response ||--o{ Alert`. Scope the rows by `Patient.clientId` /
- * `Enrollment.surveyId` to read one client's population.
- */
-export interface RuntimeMockData {
-  patients: Patient[];
-  enrollments: Enrollment[];
-  checkIns: CheckIn[];
-  responses: Response[];
-  alerts: Alert[];
 }
